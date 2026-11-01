@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wisata_candi_charoline/models/candi.dart';
+import 'package:wisata_candi_charoline/providers/favorite_provider.dart';
+import 'package:wisata_candi_charoline/screens/profile_screen.dart';
 import 'package:wisata_candi_charoline/widgets/detail_gallery.dart';
 import 'package:wisata_candi_charoline/widgets/detail_header.dart';
 import 'package:wisata_candi_charoline/widgets/detail_info.dart';
-import 'package:wisata_candi_charoline/providers/favorite_provider.dart';
-import 'package:provider/provider.dart';
 
-class DetailScreen extends StatefulWidget {
+class DetailScreen extends StatelessWidget {
   final Candi candi;
 
   const DetailScreen({
@@ -15,32 +16,8 @@ class DetailScreen extends StatefulWidget {
   });
 
   @override
-  State<DetailScreen> createState() => _DetailScreenState();
-}
-
-class _DetailScreenState extends State<DetailScreen> {
-  late bool _isFavorite;
-  bool _isDescriptionExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFavorite = widget.candi.isFavorite;
-  }
-
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-      widget.candi.isFavorite = _isFavorite;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // di dalam build() DetailScreen
-    final isFav = context
-        .watch<FavoriteProvider>()
-        .isFavorite(candi.name);
+    final isFav = context.watch<FavoriteProvider>().isFavorite(candi.name);
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -48,7 +25,7 @@ class _DetailScreenState extends State<DetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DetailHeader(
-              imageAsset: widget.candi.imageAsset,
+              imageAsset: candi.imageAsset,
               onBack: () {
                 if (Navigator.of(context).canPop()) {
                   Navigator.of(context).pop();
@@ -56,23 +33,28 @@ class _DetailScreenState extends State<DetailScreen> {
               },
             ),
             DetailInfo(
-              candi: widget.candi,
-              isFavorite: _isFavorite,
-              onFavoritePressed: _toggleFavorite,
-              isDescriptionExpanded: _isDescriptionExpanded,
-              onDescriptionPressed: () {
-                setState(() {
-                  _isDescriptionExpanded =
-                      !_isDescriptionExpanded;
-                });
+              candi: candi,
+              isFavorite: isFav,
+              onFavoritePressed: () {
+                context.read<FavoriteProvider>().toggle(candi.name);
               },
             ),
-            DetailGallery(
-              imageUrls: widget.candi.imageUrls,
-            ),
+            DetailGallery(imageUrls: candi.imageUrls),
             const SizedBox(height: 24),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Buka Profil',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ProfileScreen(),
+            ),
+          );
+        },
+        child: const Icon(Icons.person),
       ),
     );
   }

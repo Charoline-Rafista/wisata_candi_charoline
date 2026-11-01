@@ -1,44 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:wisata_candi_charoline/providers/auth_provider.dart';
+import 'package:wisata_candi_charoline/providers/favorite_provider.dart';
+import 'package:wisata_candi_charoline/screens/sign_in_screen.dart';
 
-class ProfileScreen extends StatefulWidget {
+
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  // TODO: 1. Deklarasikan variabel yang dibutuhkan
-  bool isSignedIn = false;
-  String fullName = 'Charoline';
-  String userName = 'charoline';
-  int favoriteCandiCount = 0;
-
-  @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final favoriteCount = context.watch<FavoriteProvider>().count;
+
     return Scaffold(
+      appBar: AppBar(title: const Text('Profil')),
       body: Stack(
         children: [
           Container(
-            height: 200,
+            height: 180,
             width: double.infinity,
             color: Colors.deepPurple,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 130),
-
-                // TODO: 2. Buat ProfileHeader (foto profil)
-                Align(
-                  alignment: Alignment.center,
-                  child: Container(
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  const SizedBox(height: 105),
+                  Container(
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.deepPurple,
-                        width: 2,
-                      ),
+                      border: Border.all(color: Colors.deepPurple, width: 2),
                       shape: BoxShape.circle,
                     ),
                     child: const CircleAvatar(
@@ -46,72 +38,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       backgroundImage: AssetImage('images/placeholder_image.png'),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-
-                // TODO: 3. Buat ProfileInfo (info pengguna)
-                Row(
-                  children: [
-                    const Icon(Icons.lock, color: Colors.amber),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Pengguna',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(width: 8),
-                    Text(': $userName', style: const TextStyle(fontSize: 18)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.person, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Nama',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(width: 8),
-                    Text(': $fullName', style: const TextStyle(fontSize: 18)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.favorite, color: Colors.red),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Favorit',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(width: 8),
-                    Text(': $favoriteCandiCount', style: const TextStyle(fontSize: 18)),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // TODO: 4. Buat ProfileActions (tombol sign in/out)
-                SizedBox(
-                  width: double.infinity,
-                  child: isSignedIn
-                      ? ElevatedButton(
-                    onPressed: signOut,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Sign Out'),
-                  )
-                      : ElevatedButton(
-                    onPressed: signIn,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Sign In'),
+                  const SizedBox(height: 24),
+                  _profileRow(
+                    icon: Icons.lock,
+                    color: Colors.amber,
+                    label: 'Pengguna',
+                    value: auth.isSignedIn ? auth.username : 'Belum Sign In',
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  _profileRow(
+                    icon: Icons.person,
+                    color: Colors.blue,
+                    label: 'Nama',
+                    value: auth.isSignedIn ? auth.username : '-',
+                  ),
+                  const SizedBox(height: 12),
+                  _profileRow(
+                    icon: Icons.favorite,
+                    color: Colors.red,
+                    label: 'Favorit',
+                    value: '$favoriteCount',
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: auth.isSignedIn
+                        ? ElevatedButton(
+                            onPressed: () {
+                              context.read<AuthProvider>().signOut();
+                              context.read<FavoriteProvider>().clearAll();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Sign Out'),
+                          )
+                        : ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const SignInScreen(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Sign In'),
+                          ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -119,17 +99,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // TODO: 5. Implementasi fungsi signIn
-  void signIn() {
-    setState(() {
-      isSignedIn = !isSignedIn;
-    });
-  }
-
-  // TODO: 6. Implementasi fungsi signOut
-  void signOut() {
-    setState(() {
-      isSignedIn = !isSignedIn;
-    });
+  static Widget _profileRow({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: color),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 85,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(
+          child: Text(': $value', style: const TextStyle(fontSize: 17)),
+        ),
+      ],
+    );
   }
 }
