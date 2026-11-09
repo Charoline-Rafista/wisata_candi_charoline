@@ -5,6 +5,7 @@ import 'package:wisata_candi_charoline/screens/profile_screen.dart';
 import 'package:wisata_candi_charoline/providers/favorite_provider.dart';
 import 'package:wisata_candi_charoline/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:wisata_candi_charoline/screens/search_screen.dart';
 
 void main() {
   runApp(
@@ -43,7 +44,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: DetailScreen(candi: candiList[0]),
+      home: SearchScreen(),
     );
   }
 }
